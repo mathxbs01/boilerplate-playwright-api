@@ -9,7 +9,7 @@ import { IResponseBase } from '../../src/api/base/baseDTO';
 dotenv.config();
 
 const testCore = new TestCore();
-const token = process.env.token ?? '';
+const token = process.env.token;
 
 test.describe('Fluxo de testes baseado em TestCore', () => {
   test('Deve criar um recurso de teste via POST', async () => {
