@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   build-and-test:
+    name: Job de Build e Teste
     runs-on: ubuntu-latest
 
     steps:
@@ -21,21 +22,29 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.15.1'
+          cache: 'yarn'
 
       - name: Instalar Yarn
         run: npm install -g yarn
 
-      - name: Yarn install
-        run: yarn install
+      - name: Instalar dependências
+        run: yarn install --frozen-lockfile
 
-      - name: Execução teste
+      - name: Executar testes de API
         run: npm run api
-        continue-on-error: true
 
-      - name: Publicar relatório de testes
+      - name: Publicar relatório de testes (JUnit)
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Test Results
           path: test-results/api-junit-results.xml
           reporter: java-junit
+          fail-on-error: false
+
+      - name: Upload artifact (relatório bruto)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: test-results/
