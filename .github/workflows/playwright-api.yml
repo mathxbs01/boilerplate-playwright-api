@@ -29,9 +29,10 @@ jobs:
         run: npm run api
         continue-on-error: true
 
-      - name: Upload relatório JUnit
+      - name: Publicar relatório de testes
+        uses: dorny/test-reporter@v1
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: junit-report
+          name: Test Results
           path: test-results/api-junit-results.xml
+          reporter: java-junit
