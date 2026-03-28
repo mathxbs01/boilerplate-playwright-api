@@ -1,36 +1,37 @@
-trigger:
-  - main
+name: CI - Build e Teste
 
-stages:
-  - stage: __default
-    jobs:
-      - job: BuildAndTest
-        displayName: 'Job de Build e Teste'
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '22.15.1'
-            displayName: 'Install Node.js'
+on:
+  push:
+    branches:
+      - master
 
-          - script: npm install --global yarn
-            displayName: 'Install package yarn'
+jobs:
+  build-and-test:
+    name: Job de Build e Teste
+    runs-on: ubuntu-latest
 
-          - script: yarn install
-            displayName: 'Yarn install'
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-          - script: |
-              npm run api
-            displayName: 'Execução teste'
-            continueOnError: true
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.15.1'
 
-          - task: PublishTestResults@2
-            displayName: 'Geração relatório JUnit'
-            condition: succeededOrFailed()
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: |
-                $(System.DefaultWorkingDirectory)/test-results/api-junit-results.xml
-              searchFolder: '$(System.DefaultWorkingDirectory)/test-results'
-              publishRunAttachments: true
+      - name: Instalar Yarn
+        run: npm install -g yarn
+
+      - name: Yarn install
+        run: yarn install
+
+      - name: Execução teste
+        run: npm run api
+        continue-on-error: true
+
+      - name: Upload relatório JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: test-results/api-junit-results.xml
