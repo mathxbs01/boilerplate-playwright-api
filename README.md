@@ -1,132 +1,69 @@
 # Introdução
 
-Este projeto é um boilerplate de automação de testes para APIs com foco em validação de contratos e fluxos de negócio.
-A base utiliza `@playwright/test` para execução de suites e `axios` para chamadas HTTP.
+Implementação da automação de testes funcionais para validação dos contratos nos módulos:
 
-Exemplo utilizado: https://fakestoreapi.com/
+- Pagamentos
 
-# Arquitetura aplicada
+Utilizando o framework "playwright" e a lib "Axios" para as chamadas http.
 
-A arquitetura segue o padrão de camadas, evitando acoplamento entre:
+# Padrão arquitetura
 
-- `src/api`
-- `src/core`
-- `src/fixtures`
-- `src/utils`
-- `tests/api`
+A padrão adotado implica na separação de responsabilidades, em src e test.
 
-## Camada `src/api`
+1. src
 
-Responsável por encapsular as requisições HTTP e os contratos de cada recurso.
+- api
+- core
+- fixtures
+- utils
 
-- `src/api/base/base.api.ts`
-  - `HttpClient`: wrapper genérico de `axios` com métodos `useGet`, `usePost`, `usePut` e `useDelete`.
-  - Faz tratamento comum de headers, query params, `validateStatus` e logging de erros.
-- `src/api/base/baseDTO.ts`
-  - Define interfaces de request/response usadas pelo `HttpClient`.
-- `src/api/controller/...`
-  - Cada recurso deve ter sua própria pasta e implementação de serviço API.
-  - Exemplo: `src/api/controller/testApi/test.api.ts` contém os métodos específicos de CRUD para o recurso de teste.
+2. tests
 
-## Camada `src/core`
+- api
 
-Responsável pela orquestração do fluxo de testes e validação de contrato.
+A camada "src" contém o "motor" para a execução dos testes, sendo responsável por subsidiar recursos para a execução ou validação dos testes.
+**api**: Contém as chamadas HTTPs, sendo injetadas através do base.
+**core**: Através da injeção da camada de _api_, fica responsável por ser a camada de transição entre os testes a serem executadas e as chamadas HTTP.
+**fixutes**: Responsável pela alocação de mocks ou arquivos base para testes.
+**utils**: Responsável pelas funções utilitárias, como geração de dados, formação etc.
 
-- `src/core/testCore/test.core.ts`
-  - Importa serviços de API (`TestApi`) e expõe métodos de negócio como `postTestCore`, `getTestCore`, `putTestCore`, `deleteTestCore`.
-  - Realiza verificações de status usando `expect` antes de devolver a resposta para os testes.
-- `src/core/coreDTO.ts`
-  - Define o payload genérico `ICoreDTO<T>` usado para transportar dados, token e status esperado entre testes e core.
+A camada "tests" contém os cenários e suites de testes a serem validados.
+**api**: Contém a validação dos testes de contrato de acordo com o fluxo esperado.
 
-## Camada `tests/api`
-
-Contém os cenários de execução reais.
-
-- `tests/api/test.spec.ts`
-  - Usa `@playwright/test` para definir suites e testes.
-  - Cria casos de uso com dados, chama o `TestCore` e faz asserções finais sobre o payload retornado.
-
-## Camada `src/fixtures`
-
-Responsável por dados de teste, mocks, caminhos de arquivos e fixtures de suporte.
-
-- Use `src/fixtures/data` para armazenar exemplos de payloads, bases de dados de teste ou arquivos JSON.
-
-## Camada `src/utils`
-
-Funções utilitárias gerais, helpers e serviços transversais.
-
-- Exemplo: `src/utils/logger/logger.ts` para registrar mensagens de erro e debug.
-- `src/utils/database/mongoDb.ts` para integração com MongoDB, quando necessário.
-- `src/utils/leituraArquivo/lerArquivo.ts` para carregar dados de arquivos.
-
-# Como implementar novas features
-
-Para adicionar um novo recurso ou endpoint, siga este padrão por camada.
-
-1. Criar os contratos DTO
-   - Adicione interfaces de request/response em `src/api/controller/<feature>/<feature>DTO.ts`.
-   - Exemplo: `IPostUser`, `IGetUser`, `IResponseUser`.
-
-2. Criar o serviço de API
-   - Adicione `src/api/controller/<feature>/<feature>.api.ts`.
-   - Importe `HttpClient` de `src/api/base/base.api.ts`.
-   - Use métodos `useGet`, `usePost`, `usePut` ou `useDelete`.
-   - Deixe o serviço responsável apenas por chamada HTTP, endpoint e headers.
-
-3. Criar a camada de core
-   - Adicione `src/core/<feature>/<feature>.core.ts`.
-   - Importe o serviço de API criado na etapa anterior.
-   - Crie métodos que recebem `ICoreDTO<T>` e executam as chamadas de API.
-   - Realize asserções de contrato de forma centralizada nessa camada.
-     - Exemplo: `expect(response.status).toBe(data.status);`
-   - Não coloque lógica de requisição HTTP diretamente no `core`.
-
-4. Criar os testes
-   - Adicione um novo arquivo em `tests/api/<feature>.spec.ts` ou expanda um arquivo existente.
-   - Use `test.describe` e `test('...', async () => { ... })`.
-   - Monte os dados de entrada e o status esperado.
-   - Chame os métodos do core e, se necessário, adicione asserções de contrato adicionais.
-   - Nunca use `axios` diretamente em `tests`; sempre passe pelo `core`.
-
-5. Usar fixtures e utils quando necessário
-   - Se precisar de dados estáticos ou de massa, coloque em `src/fixtures/data`.
-   - Se precisar de rotina de leitura, formatação ou geração de valores, coloque em `src/utils`.
-
-# Convenções de responsabilidade
-
-- `src/api`: apenas chamada HTTP, endpoints e contratos.
-- `src/core`: fluxo de negócio, transformações e validações de status/contrato.
-- `tests/api`: definição de cenários, dados de teste e validações finais.
-- `src/fixtures`: dados de suporte e mocks.
-- `src/utils`: funções utilitárias reutilizáveis.
-
-# Instalação
+# Instalação das dependências
 
 Requisitos:
 
-- Node.js v22.15.1 ou superior
+- [node](https://nodejs.org/en/download): + v22.15.1
 
-Instale as dependências com:
-
-```bash
-npm install
-```
+Deverá realizar a instalação das dependências utilizando o comando `npm install`, após a instalação basta executar os testes.
 
 # Execução dos testes
 
-Execute as suítes com:
+Poderá ser executados através do tagueamento ou utilizando a interface com base nas extensões usuais para o playwright.
+Caso queira realizar a execução com base nos comandos npm, necessário verificar os comandos de script em `package.json`.
 
-```bash
-npm run api
-```
+# Relatório
 
-# Relatórios
+Para a geração dos relatórios após a execução, basta utilizar o comando ``npm run relatorio` que será gerado utilizando a lib "allure-report".
 
-Gere e abra o relatório Allure com:
+# TODO
 
-```bash
-npm run relatorio
-```
+## Pagamentos
 
-
+- [ ] Refatoração dos módulos desenvolvidos para redução de repetição de código.
+- [x] Desenvolvimento das suites de assinatura.
+- [x] Desenvolvimento das suites de pacote extra.
+- [x] Desenvolvimento das suites de método de pagamento.
+- [x] Desenvolvimento das suites de frete.
+- [x] Desenvolvimento das suites de cancelamento.
+- [x] Desenvolvimento das suites de plano.
+- [x] Desenvolvimento das suites de POS.
+- [x] Desenvolvimento das suites de gerenciamento de templates.
+- [ ] ~~Incluir cenários de renovação/geração de ciclo.~~ (Não é possível)
+- [ ] Validação dos asserts.
+- [ ] Apresentação dos cenários para PM/Teach Lead.
+- [x] Criação dos relatórios visuais.
+- [ ] Mapeamento de mocks para inclusão de envs.
+- [ ] Inclusão das tags.
+- [x] Criação da pipeline e serviço de relatórios.
