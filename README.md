@@ -1,132 +1,225 @@
-# Introdução
+# Boilerplate Playwright API - Automação de Testes de API
 
-Este projeto é um boilerplate de automação de testes para APIs com foco em validação de contratos e fluxos de negócio.
-A base utiliza `@playwright/test` para execução de suites e `axios` para chamadas HTTP.
+## 📋 Sobre o Projeto
 
-Exemplo utilizado: https://fakestoreapi.com/
+Este é um boilerplate de automação de testes para APIs usando **@playwright/test** e **axios**.
+A ideia é manter uma arquitetura em camadas, facilitando a manutenção, o reaproveitamento de código e a escalabilidade dos cenários.
 
-# Arquitetura aplicada
+---
 
-A arquitetura segue o padrão de camadas, evitando acoplamento entre:
+## 🏗️ Arquitetura do Projeto
 
-- `src/api`
-- `src/core`
-- `src/fixtures`
-- `src/utils`
-- `tests/api`
+A estrutura segue um padrão em **camadas**, separando responsabilidades entre testes, API, core e utils:
 
-## Camada `src/api`
+### Estrutura de Pastas
 
-Responsável por encapsular as requisições HTTP e os contratos de cada recurso.
-
-- `src/api/base/base.api.ts`
-  - `HttpClient`: wrapper genérico de `axios` com métodos `useGet`, `usePost`, `usePut` e `useDelete`.
-  - Faz tratamento comum de headers, query params, `validateStatus` e logging de erros.
-- `src/api/base/baseDTO.ts`
-  - Define interfaces de request/response usadas pelo `HttpClient`.
-- `src/api/controller/...`
-  - Cada recurso deve ter sua própria pasta e implementação de serviço API.
-  - Exemplo: `src/api/controller/testApi/test.api.ts` contém os métodos específicos de CRUD para o recurso de teste.
-
-## Camada `src/core`
-
-Responsável pela orquestração do fluxo de testes e validação de contrato.
-
-- `src/core/testCore/test.core.ts`
-  - Importa serviços de API (`TestApi`) e expõe métodos de negócio como `postTestCore`, `getTestCore`, `putTestCore`, `deleteTestCore`.
-  - Realiza verificações de status usando `expect` antes de devolver a resposta para os testes.
-- `src/core/coreDTO.ts`
-  - Define o payload genérico `ICoreDTO<T>` usado para transportar dados, token e status esperado entre testes e core.
-
-## Camada `tests/api`
-
-Contém os cenários de execução reais.
-
-- `tests/api/test.spec.ts`
-  - Usa `@playwright/test` para definir suites e testes.
-  - Cria casos de uso com dados, chama o `TestCore` e faz asserções finais sobre o payload retornado.
-
-## Camada `src/fixtures`
-
-Responsável por dados de teste, mocks, caminhos de arquivos e fixtures de suporte.
-
-- Use `src/fixtures/data` para armazenar exemplos de payloads, bases de dados de teste ou arquivos JSON.
-
-## Camada `src/utils`
-
-Funções utilitárias gerais, helpers e serviços transversais.
-
-- Exemplo: `src/utils/logger/logger.ts` para registrar mensagens de erro e debug.
-- `src/utils/database/mongoDb.ts` para integração com MongoDB, quando necessário.
-- `src/utils/leituraArquivo/lerArquivo.ts` para carregar dados de arquivos.
-
-# Como implementar novas features
-
-Para adicionar um novo recurso ou endpoint, siga este padrão por camada.
-
-1. Criar os contratos DTO
-   - Adicione interfaces de request/response em `src/api/controller/<feature>/<feature>DTO.ts`.
-   - Exemplo: `IPostUser`, `IGetUser`, `IResponseUser`.
-
-2. Criar o serviço de API
-   - Adicione `src/api/controller/<feature>/<feature>.api.ts`.
-   - Importe `HttpClient` de `src/api/base/base.api.ts`.
-   - Use métodos `useGet`, `usePost`, `usePut` ou `useDelete`.
-   - Deixe o serviço responsável apenas por chamada HTTP, endpoint e headers.
-
-3. Criar a camada de core
-   - Adicione `src/core/<feature>/<feature>.core.ts`.
-   - Importe o serviço de API criado na etapa anterior.
-   - Crie métodos que recebem `ICoreDTO<T>` e executam as chamadas de API.
-   - Realize asserções de contrato de forma centralizada nessa camada.
-     - Exemplo: `expect(response.status).toBe(data.status);`
-   - Não coloque lógica de requisição HTTP diretamente no `core`.
-
-4. Criar os testes
-   - Adicione um novo arquivo em `tests/api/<feature>.spec.ts` ou expanda um arquivo existente.
-   - Use `test.describe` e `test('...', async () => { ... })`.
-   - Monte os dados de entrada e o status esperado.
-   - Chame os métodos do core e, se necessário, adicione asserções de contrato adicionais.
-   - Nunca use `axios` diretamente em `tests`; sempre passe pelo `core`.
-
-5. Usar fixtures e utils quando necessário
-   - Se precisar de dados estáticos ou de massa, coloque em `src/fixtures/data`.
-   - Se precisar de rotina de leitura, formatação ou geração de valores, coloque em `src/utils`.
-
-# Convenções de responsabilidade
-
-- `src/api`: apenas chamada HTTP, endpoints e contratos.
-- `src/core`: fluxo de negócio, transformações e validações de status/contrato.
-- `tests/api`: definição de cenários, dados de teste e validações finais.
-- `src/fixtures`: dados de suporte e mocks.
-- `src/utils`: funções utilitárias reutilizáveis.
-
-# Instalação
-
-Requisitos:
-
-- Node.js v22.15.1 ou superior
-
-Instale as dependências com:
-
-```bash
-npm install
+```
+boilerplate-playwright-api/
+├── src/
+│   ├── api/                      # Camada de API
+│   │   ├── base/
+│   │   │   ├── base.api.ts
+│   │   │   └── baseDTO.ts
+│   │   └── controller/
+│   │       └── testApi/
+│   │           ├── test.api.ts
+│   │           └── testDTO.ts
+│   ├── core/                     # Camada de Core
+│   │   ├── coreDTO.ts
+│   │   └── testCore/
+│   │       └── test.core.ts
+│   └── utils/                    # Camada de Utilitários
+│       ├── logger/logger.ts
+│       ├── database/mongoDb.ts
+│       └── leituraArquivo/lerArquivo.ts
+├── tests/                        # Camada de Testes
+│   └── api/
+│       └── test.spec.ts
+├── allure-results/               # Resultados do Allure
+├── test-results/                 # Resultados de execução
+├── package.json
+└── README.md
 ```
 
-# Execução dos testes
+### Camadas da Arquitetura
 
-Execute as suítes com:
+#### 1. **Camada de API** (`src/api/`)
+- Agrupa toda a lógica de chamada HTTP e contratos de endpoints.
+- Encapsula `axios` em um cliente centralizado.
+- Responsável por headers, query params, endpoint e formatação de request/response.
+
+**Principais arquivos:**
+- `src/api/base/base.api.ts`
+  - `HttpClient` com métodos `useGet`, `usePost`, `usePut` e `useDelete`.
+- `src/api/base/baseDTO.ts`
+  - DTOs e contratos de dados usados pelo cliente HTTP.
+- `src/api/controller/testApi/test.api.ts`
+  - Serviço de API específico do recurso de teste.
+- `src/api/controller/testApi/testDTO.ts`
+  - Contratos de request/response para o recurso de teste.
+
+#### 2. **Camada de Core** (`src/core/`)
+- Orquestra o fluxo de negócio dos testes.
+- Faz validações de contrato e retorna respostas tratadas para os testes.
+
+**Principais arquivos:**
+- `src/core/testCore/test.core.ts`
+  - Implementa métodos de alto nível como `postTestCore`, `getTestCore`, `putTestCore`, `deleteTestCore`.
+- `src/core/coreDTO.ts`
+  - Define o payload genérico `ICoreDTO<T>` usado para transportar dados, token e status esperado.
+
+#### 3. **Camada de Testes** (`tests/api/`)
+- Contém os cenários de execução reais com Playwright.
+- Usa `@playwright/test` para estruturar suites e casos.
+- Faz validações finais sobre o retorno do core.
+
+**Principais arquivos:**
+- `tests/api/test.spec.ts`
+  - Exemplo de suíte de teste de API.
+
+#### 4. **Camada de Utilitários** (`src/utils/`)
+- Funções transversais que suportam os testes.
+- Helpers de logging, integração com banco e leitura de arquivos.
+
+**Principais utilitários:**
+- `src/utils/logger/logger.ts`
+- `src/utils/database/mongoDb.ts`
+- `src/utils/leituraArquivo/lerArquivo.ts`
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+- Node.js 22+
+- Dependências instaladas via `npm install`
+
+### Executar Testes
 
 ```bash
 npm run api
 ```
 
-# Relatórios
+### Executar um teste específico
 
-Gere e abra o relatório Allure com:
+```bash
+npx playwright test tests/api/test.spec.ts
+```
+
+### Geração de Relatório
 
 ```bash
 npm run relatorio
 ```
+
+---
+
+## 📝 Como Criar um Novo Teste
+
+Para adicionar um novo fluxo, siga os passos abaixo:
+
+### 1. Criar o serviço de API
+
+**Arquivo:** `src/api/controller/<feature>/<feature>.api.ts`
+
+```ts
+import { HttpClient } from '../../base/base.api';
+import { IFeatureDTO } from './featureDTO';
+
+const httpClient = new HttpClient();
+
+export class FeatureApi {
+  static async createFeature(data: IFeatureDTO) {
+    return httpClient.usePost({
+      url: '/feature',
+      body: data,
+    });
+  }
+}
+```
+
+### 2. Criar os DTOs
+
+**Arquivo:** `src/api/controller/<feature>/<feature>DTO.ts`
+
+```ts
+export interface IFeatureDTO {
+  id?: number;
+  name: string;
+}
+```
+
+### 3. Criar a camada de core
+
+**Arquivo:** `src/core/<feature>/<feature>.core.ts`
+
+```ts
+import { FeatureApi } from '../../api/controller/feature/feature.api';
+import { ICoreDTO } from '../coreDTO';
+
+export class FeatureCore {
+  static async createFeature(data: ICoreDTO<IFeatureDTO>) {
+    const response = await FeatureApi.createFeature(data.payload);
+    expect(response.status).toBe(data.status);
+    return response;
+  }
+}
+```
+
+### 4. Criar o teste Playwright
+
+**Arquivo:** `tests/api/feature.spec.ts`
+
+```ts
+import { test } from '@playwright/test';
+import { FeatureCore } from '../../src/core/feature/feature.core';
+
+test('Criar feature', async () => {
+  const data = {
+    payload: { name: 'teste' },
+    status: 201,
+  };
+
+  const response = await FeatureCore.createFeature(data);
+  expect(response.data).toBeDefined();
+});
+```
+
+---
+
+## 📊 Relatórios
+
+O relatório Allure é gerado a partir dos resultados em `allure-results`.
+
+### Como funciona
+1. Os testes executam e gravam resultados em `allure-results/`
+2. O comando `npm run relatorio` gera o relatório em `allure-report/`
+3. A suíte abre automaticamente o relatório gerado
+
+**Para abrir manualmente:**
+
+```bash
+npx allure open ./allure-report
+```
+
+---
+
+## 📌 Convenções do Projeto
+
+1. Estruture os testes por funcionalidade em `tests/api/`
+2. Use `src/api/` apenas para chamadas HTTP
+3. Use `src/core/` para regras de negócio e validações comuns
+4. Não faça chamadas `axios` diretamente em `tests/`
+5. Use `src/utils/` para helpers e integrações transversais
+
+---
+
+## 🎯 Próximos Passos
+
+- Adicionar mais cenários de API
+- Implementar integração com CI/CD
+- Expandir cobertura de contratos e validações
+- Padronizar dados de teste e fixtures
+
 
 
