@@ -34,7 +34,7 @@ export class TestApi {
       const response: IResponseBase<IResponseTest | IResponseBaseFailed> = await baseApi.useGet({
         token: token,
         headers: this.headerDefault,
-        endpoint: `${API}/products/${id}`,
+        endpoint: `${API}products/${id}`,
       });
 
       return response;
@@ -49,7 +49,7 @@ export class TestApi {
         token: token,
         body: data,
         headers: this.headerDefault,
-        endpoint: `${API}/products/${data.id}`,
+        endpoint: `${API}products/${data.id}`,
       });
 
       return response;
@@ -63,7 +63,7 @@ export class TestApi {
       const response: IResponseBase<IResponseTest | IResponseBaseFailed> = await baseApi.useDelete({
         token: token,
         headers: this.headerDefault,
-        endpoint: `${API}/products/${id}`,
+        endpoint: `${API}products/${id}`,
       });
 
       return response;
