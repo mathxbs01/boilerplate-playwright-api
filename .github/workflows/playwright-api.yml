@@ -5,9 +5,12 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   build-and-test:
-    name: Job de Build e Teste
     runs-on: ubuntu-latest
 
     steps:
