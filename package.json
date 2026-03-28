@@ -6,7 +6,7 @@
     "relatorio": "npx allure generate ./allure-results --clean  -o allure-report && xcopy /E /I /Y .\\allure-report\\history .\\allure-results\\history && npx allure open ./allure-report"
   },
   "keywords": [],
-  "author": "",
+  "author": "Matheus Batista dos Santos",
   "license": "ISC",
   "description": "",
   "devDependencies": {
